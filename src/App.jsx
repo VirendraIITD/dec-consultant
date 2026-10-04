@@ -6,7 +6,8 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ApplyForm from './pages/ApplyForm';
 import ThankYou from './pages/ThankYou';
-import TalentPool from './pages/TalentPool';    // ⬅ NEW
+import TalentPool from './pages/TalentPool';
+import Dashboard from './pages/admin/Dashboard';
 
 function App() {
   return (
@@ -18,7 +19,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/thank-you" element={<ThankYou />} />
-      <Route path="/talent-pool" element={<TalentPool />} />    {/* ⬅ NEW */}
+      <Route path="/talent-pool" element={<TalentPool />} />
+      <Route path="/admin" element={<Dashboard />} />
     </Routes>
   );
 }

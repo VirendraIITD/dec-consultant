@@ -19,6 +19,7 @@ dec-consultant/
 │   │   ├── Login.jsx          ⬅ Login page
 │   │   ├── Signup.jsx         ⬅ Registration page
 │   │   ├── ApplyForm.jsx      ⬅ Job application form
+│   │   ├── TalentPool.jsx     ⬅ Talent Pool form
 │   │   └── ThankYou.jsx       ⬅ Confirmation page
 │   └── 📁 assets/             (optional images)
 ├── .env                       ⬅ root
