@@ -11,6 +11,8 @@ import Dashboard from './pages/admin/Dashboard';
 import ViewApplications from './pages/admin/ViewApplications';
 import ViewTalentPool from './pages/admin/ViewTalentPool';
 import CreateJob from './pages/admin/CreateJob';
+import ManageJobs from './pages/admin/ManageJobs';
+import EditJob from './pages/admin/EditJob';
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
       <Route path="/admin/applications" element={<ViewApplications />} />
       <Route path="/admin/talent-pool" element={<ViewTalentPool />} />
       <Route path="/admin/create-job" element={<CreateJob />} />
+      <Route path="/admin/manage-jobs" element={<ManageJobs />} />
+      <Route path="/admin/edit-job/:id" element={<EditJob />} />
     </Routes>
   );
 }

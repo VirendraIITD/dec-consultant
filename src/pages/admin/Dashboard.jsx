@@ -148,25 +148,31 @@ function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <QuickAction
-            to="/admin/create-job"
-            icon="➕"
-            title="Create Job"
-            description="Post a new job opening"
-          />
-          <QuickAction
-            to="/admin/applications"
-            icon="📋"
-            title="View Applications"
-            description="Review candidate applications"
-          />
-          <QuickAction
-            to="/admin/talent-pool"
-            icon="🎯"
-            title="Talent Pool"
-            description="Browse general resumes"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <QuickAction
+                to="/admin/create-job"
+                icon="➕"
+                title="Create Job"
+                description="Post a new job opening"
+            />
+            <QuickAction
+                to="/admin/manage-jobs"
+                icon="📋"
+                title="Manage Jobs"
+                description="Edit or delete job posts"
+            />
+            <QuickAction
+                to="/admin/applications"
+                icon="📄"
+                title="View Applications"
+                description="Review candidate applications"
+            />
+            <QuickAction
+                to="/admin/talent-pool"
+                icon="🎯"
+                title="Talent Pool"
+                description="Browse general resumes"
+            />
         </div>
 
         {/* Recent Applications */}

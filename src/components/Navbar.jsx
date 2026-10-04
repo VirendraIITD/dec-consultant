@@ -4,16 +4,39 @@ import { supabase } from '../lib/supabaseClient';
 
 function Navbar() {
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get current user
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    async function loadUser() {
+      const { data } = await supabase.auth.getUser();
+      setUser(data.user);
+
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+        setRole(profile?.role);
+      }
+    }
+    loadUser();
 
     // Listen for auth changes
     const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         setUser(session?.user || null);
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          setRole(profile?.role);
+        } else {
+          setRole(null);
+        }
       }
     );
 
@@ -56,6 +79,15 @@ function Navbar() {
           <Link to="/talent-pool" className="text-charcoal hover:text-sky font-medium text-sm">
             Talent Pool
           </Link>
+
+          {role === 'admin' && (
+            <Link
+              to="/admin"
+              className="text-navy hover:text-sky font-semibold text-sm border-l border-gray-200 pl-6"
+            >
+              👨‍💼 Admin
+            </Link>
+          )}
 
           {user ? (
             <div className="flex items-center gap-3">
