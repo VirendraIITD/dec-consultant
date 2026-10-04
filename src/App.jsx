@@ -8,7 +8,8 @@ import ApplyForm from './pages/ApplyForm';
 import ThankYou from './pages/ThankYou';
 import TalentPool from './pages/TalentPool';
 import Dashboard from './pages/admin/Dashboard';
-import ViewApplications from './pages/admin/ViewApplications';   // ⬅ NEW
+import ViewApplications from './pages/admin/ViewApplications';
+import ViewTalentPool from './pages/admin/ViewTalentPool';
 
 function App() {
   return (
@@ -22,7 +23,8 @@ function App() {
       <Route path="/thank-you" element={<ThankYou />} />
       <Route path="/talent-pool" element={<TalentPool />} />
       <Route path="/admin" element={<Dashboard />} />
-      <Route path="/admin/applications" element={<ViewApplications />} />   {/* ⬅ NEW */}
+      <Route path="/admin/applications" element={<ViewApplications />} />
+      <Route path="/admin/talent-pool" element={<ViewTalentPool />} />
     </Routes>
   );
 }
