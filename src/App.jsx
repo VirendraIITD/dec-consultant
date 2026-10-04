@@ -10,6 +10,7 @@ import TalentPool from './pages/TalentPool';
 import Dashboard from './pages/admin/Dashboard';
 import ViewApplications from './pages/admin/ViewApplications';
 import ViewTalentPool from './pages/admin/ViewTalentPool';
+import CreateJob from './pages/admin/CreateJob';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
       <Route path="/admin" element={<Dashboard />} />
       <Route path="/admin/applications" element={<ViewApplications />} />
       <Route path="/admin/talent-pool" element={<ViewTalentPool />} />
+      <Route path="/admin/create-job" element={<CreateJob />} />
     </Routes>
   );
 }
