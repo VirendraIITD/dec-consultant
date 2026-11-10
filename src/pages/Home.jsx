@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 const categories = [
-  { name: 'Engineering', icon: '⚙️' },
-  { name: 'Law', icon: '⚖️' },
-  { name: 'Management', icon: '📊' },
-  { name: 'Others', icon: '📁' },
+  { name: 'Engineering', icon: '⚙️', bg: 'bg-sky/10', border: 'border-sky' },
+  { name: 'Law', icon: '⚖️', bg: 'bg-purple-500/10', border: 'border-purple-500' },
+  { name: 'Management', icon: '📊', bg: 'bg-emerald/10', border: 'border-emerald' },
+  { name: 'Others', icon: '📁', bg: 'bg-amber/10', border: 'border-amber' },
 ];
 
 // Why: We store categories in an array instead of hardcoding 4 cards. This is called "data-driven rendering".
@@ -16,8 +17,8 @@ function Home() {
     <div className="min-h-screen bg-cream">
       <Navbar />
 
-      {/* HERO SECTION */}
-      <section className="max-w-6xl mx-auto px-4 py-16 text-center">
+      {/* HERO SECTION - Added subtle gradient */}
+      <section className="bg-gradient-to-br from-cream via-white to-sky/5 px-4 py-16 text-center">
         <h1 className="text-5xl font-bold text-navy mb-4">
           Find Your Dream Job
         </h1>
@@ -34,7 +35,7 @@ function Home() {
       </section>
 
       {/* CATEGORIES SECTION */}
-      <section className="max-w-6xl mx-auto px-4 pb-16">
+      <section className="max-w-6xl mx-auto px-4 pb-16 pt-8">
         <h2 className="text-2xl font-bold text-navy mb-6 text-center">
           Browse by Category
         </h2>
@@ -43,10 +44,11 @@ function Home() {
             <Link
               key={cat.name}
               to={`/jobs?category=${cat.name}`}
-              className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition text-center border border-gray-100"
+              /* FIXED: Added cat.bg and cat.border to make colors work */
+              className={`${cat.bg} ${cat.border} p-6 rounded-xl shadow-sm hover:shadow-md hover:scale-105 transition-all text-center border-2`}
             >
               <div className="text-4xl mb-3">{cat.icon}</div>
-              <h3 className="font-semibold text-navy text-sm">{cat.name}</h3>
+              <h3 className="font-bold text-navy text-sm">{cat.name}</h3>
             </Link>
           ))}
         </div>
@@ -63,7 +65,7 @@ function Home() {
           </p>
           <Link
             to="/talent-pool"
-            className="inline-block bg-amber text-white px-6 py-2 rounded-full font-medium hover:opacity-90 transition"
+            className="inline-block bg-amber text-white px-6 py-2 rounded-full font-medium hover:opacity-90 transition shadow-sm"
           >
             📩 Submit Your Resume
           </Link>
@@ -71,9 +73,8 @@ function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer className="text-center py-8 text-sm text-charcoal/60 border-t">
-        © 2026 DEC Consultant • PHAZE AI PVT LIMITED
-      </footer>
+
+      <Footer />
     </div>
   );
 }

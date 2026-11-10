@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient';
 import Navbar from '../components/Navbar';
 import JobCard from '../components/JobCard';
 import CategoryFilter from '../components/CategoryFilter';
+import Footer from '../components/Footer';
 
 function JobListings() {
   const [jobs, setJobs] = useState([]);
@@ -42,8 +43,10 @@ function JobListings() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen flex flex-col bg-cream">
       <Navbar />
+      {/* Add flex-grow to this div */}
+      <div className="flex-grow max-w-6xl w-full mx-auto px-4 py-10"></div>
 
       <div className="max-w-6xl mx-auto px-4 py-10">
         {/* Heading */}
@@ -88,6 +91,7 @@ function JobListings() {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

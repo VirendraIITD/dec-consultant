@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabaseClient';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer'; // ⬅ ADDED IMPORT
 
 function ApplyForm() {
   const { id } = useParams();
@@ -633,6 +634,8 @@ function ApplyForm() {
           </p>
         </form>
       </div>
+      {/* ⬅ ADDED Footer */}
+      <Footer />
     </div>
   );
 }
