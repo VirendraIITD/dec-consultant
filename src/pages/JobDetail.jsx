@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { jobsAPI } from '../lib/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer'; // ⬅ ADDED IMPORT
 
@@ -12,22 +12,18 @@ function JobDetail() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchJob() {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        setError('Job not found');
-      } else {
-        setJob(data);
-      }
+  async function fetchJob() {
+    try {
+      const data = await jobsAPI.getById(id); // ⬅ Using the Waiter
+      setJob(data);
+    } catch (error) {
+      setError('Job not found');
+    } finally {
       setLoading(false);
     }
-    fetchJob();
-  }, [id]);
+  }
+  fetchJob();
+}, [id]);
 
   async function handleApply() {
     const { data } = await supabase.auth.getUser();

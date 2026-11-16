@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { jobsAPI } from '../lib/api';
 import Navbar from '../components/Navbar';
 import JobCard from '../components/JobCard';
 import CategoryFilter from '../components/CategoryFilter';
@@ -14,23 +14,20 @@ function JobListings() {
 
   // Fetch jobs from Supabase on page load
   useEffect(() => {
-    async function fetchJobs() {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching jobs:', error);
-      } else {
-        setJobs(data || []);
-        setFilteredJobs(data || []);
-      }
+  async function fetchJobs() {
+    try {
+      // Ask the waiter for the jobs!
+      const data = await jobsAPI.getAllActive();
+      setJobs(data);
+      setFilteredJobs(data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
       setLoading(false);
     }
-    fetchJobs();
-  }, []);
+  }
+  fetchJobs();
+}, []);
 
   // Filter when category changes
   function handleCategoryFilter(category) {

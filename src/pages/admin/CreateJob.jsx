@@ -1,364 +1,160 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+import { authAPI, talentPoolAPI } from '../../lib/api'; // ⬅ NEW API IMPORTS
 import Navbar from '../../components/Navbar';
 
-function CreateJob() {
+const STATUS_FILTERS = [
+  { id: 'all', label: 'All', icon: '📋' }, { id: 'new', label: 'New', icon: '🆕' },
+  { id: 'contacted', label: 'Contacted', icon: '📞' }, { id: 'hired', label: 'Hired', icon: '✅' }, { id: 'archived', label: 'Archived', icon: '📦' },
+];
+
+const CATEGORY_FILTERS = [
+  { id: 'all', label: 'All Categories' }, { id: 'Engineering', label: '⚙️ Engineering' },
+  { id: 'Management', label: '📊 Management' }, { id: 'Legal Studies', label: '⚖️ Legal Studies' },
+  { id: 'Architecture', label: '📐 Architecture' }, { id: 'Agriculture', label: '🌾 Agriculture' },
+  { id: 'Nursing', label: '🩺 Nursing' }, { id: 'Allied Science', label: '🔬 Allied Science' },
+  { id: 'Hospitality', label: '🏨 Hospitality' }, { id: 'Computer Application', label: '💻 Computer Application' },
+  { id: 'Media & Mass Communication', label: '📺 Media & Mass Comm.' }, { id: 'Design', label: '🎨 Design' },
+  { id: 'Liberal Arts', label: '📖 Liberal Arts' }, { id: 'Education', label: '🎓 Education' },
+  { id: 'Forensic Sciences', label: '🔎 Forensic Sciences' }, { id: 'Others', label: '📁 Others' },
+];
+
+function ViewTalentPool() {
   const navigate = useNavigate();
+  const [candidates, setCandidates] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+  const [activeStatus, setActiveStatus] = useState('all');
+  const [activeCategory, setActiveCategory] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
 
-  const [formData, setFormData] = useState({
-    title: '',
-    category: '',
-    sub_category: '',
-    location: '',
-    deadline: '',
-    description: '',
-    requirements: '',
-    status: 'active',
-  });
-
-  // Verify admin on load
   useEffect(() => {
-    async function checkAdmin() {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        navigate('/login');
-        return;
-      }
+    async function loadCandidates() {
+      try {
+        const user = await authAPI.getCurrentUser();
+        if (!user) { navigate('/login'); return; }
+        const profile = await authAPI.getProfile(user.id);
+        if (profile?.role !== 'admin') { setError('Admin access required'); setLoading(false); return; }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', userData.user.id)
-        .single();
-
-      if (profile?.role !== 'admin') {
-        setError('Admin access required');
+        const data = await talentPoolAPI.getAll();
+        setCandidates(data || []);
+        setFiltered(data || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
-    checkAdmin();
+    loadCandidates();
   }, [navigate]);
 
-  function handleChange(e) {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  }
-
-  // Calculate minimum deadline (today)
-  const today = new Date().toISOString().split('T')[0];
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setSubmitting(true);
-
-    try {
-      // Validate deadline is in the future
-      if (new Date(formData.deadline) <= new Date()) {
-        setError('Deadline must be in the future');
-        setSubmitting(false);
-        return;
-      }
-
-      // Insert job into database
-      const { data, error: insertError } = await supabase
-        .from('jobs')
-        .insert({
-          title: formData.title,
-          category: formData.category,
-          sub_category: formData.sub_category || null,
-          location: formData.location,
-          deadline: formData.deadline,
-          description: formData.description,
-          requirements: formData.requirements || null,
-          status: formData.status,
-        })
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
-      // Success → redirect to the new job's detail page
-      alert('Job posted successfully!');
-      navigate(`/jobs/${data.id}`);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || 'Failed to create job. Please try again.');
-      setSubmitting(false);
+  function applyFilters(status, category, query) {
+    let result = [...candidates];
+    if (status !== 'all') result = result.filter((c) => c.status === status);
+    if (category !== 'all') result = result.filter((c) => c.preferred_category === category);
+    if (query.trim()) {
+      const q = query.toLowerCase();
+      result = result.filter((c) => c.full_name?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q) || c.preferred_role?.toLowerCase().includes(q) || c.skills?.toLowerCase().includes(q));
     }
+    setFiltered(result);
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-cream">
-        <Navbar />
-        <p className="text-center py-20 text-gray-400">Loading...</p>
-      </div>
-    );
+  function handleStatusFilter(status) { setActiveStatus(status); applyFilters(status, activeCategory, searchQuery); }
+  function handleCategoryFilter(category) { setActiveCategory(category); applyFilters(activeStatus, category, searchQuery); }
+  function handleSearch(query) { setSearchQuery(query); applyFilters(activeStatus, activeCategory, query); }
+
+  async function updateStatus(candidateId, newStatus) {
+    try {
+      await talentPoolAPI.updateStatus(candidateId, newStatus); // ⬅ API CALL
+      const updated = candidates.map((c) => c.id === candidateId ? { ...c, status: newStatus } : c);
+      setCandidates(updated); applyFilters(activeStatus, activeCategory, searchQuery);
+      if (selectedCandidate?.id === candidateId) setSelectedCandidate({ ...selectedCandidate, status: newStatus });
+    } catch (err) { alert('Error: ' + err.message); }
   }
 
-  if (error && error === 'Admin access required') {
-    return (
-      <div className="min-h-screen bg-cream">
-        <Navbar />
-        <div className="text-center py-20">
-          <h2 className="text-2xl font-bold text-red-500 mb-2">{error}</h2>
-          <Link to="/" className="text-sky hover:underline">
-            ← Back to home
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const statusColors = { new: 'bg-sky', contacted: 'bg-amber', hired: 'bg-emerald', archived: 'bg-gray-400' };
+
+  if (loading) return <div className="min-h-screen bg-cream"><Navbar /><p className="text-center py-20 text-gray-400">Loading...</p></div>;
+  if (error) return <div className="min-h-screen bg-cream"><Navbar /><div className="text-center py-20"><h2 className="text-2xl font-bold text-red-500 mb-2">{error}</h2><Link to="/admin" className="text-sky hover:underline">← Back</Link></div></div>;
 
   return (
     <div className="min-h-screen bg-cream">
       <Navbar />
-
-      <div className="max-w-3xl mx-auto px-4 py-10">
-        {/* Back link */}
-        <Link
-          to="/admin"
-          className="text-charcoal/60 hover:text-sky text-sm mb-4 inline-block"
-        >
-          ← Back to Dashboard
-        </Link>
-
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-navy mb-2">Create New Job</h1>
-          <p className="text-charcoal/70">
-            Post a new position that will appear on the public job listings.
-          </p>
+      <div className="max-w-7xl mx-auto px-4 py-10">
+        <Link to="/admin" className="text-charcoal/60 hover:text-sky text-sm mb-4 inline-block">← Back to Dashboard</Link>
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+          <div><h1 className="text-3xl font-bold text-navy">Talent Pool</h1><p className="text-charcoal/60 mt-1">{candidates.length} general resumes submitted</p></div>
+          <input type="text" placeholder="🔍 Search by name, role, or skill..." value={searchQuery} onChange={(e) => handleSearch(e.target.value)} className="w-full md:w-80 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-sky bg-white" />
         </div>
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-8 rounded-2xl shadow-sm space-y-6"
-        >
-          {/* Section 1: Basic Info */}
-          <div>
-            <h3 className="text-lg font-bold text-navy mb-4 pb-2 border-b border-gray-100">
-              📋 Job Information
-            </h3>
+        <div className="flex gap-2 flex-wrap mb-4">
+          {STATUS_FILTERS.map((f) => {
+            const count = f.id === 'all' ? candidates.length : candidates.filter((c) => c.status === f.id).length;
+            return <button key={f.id} onClick={() => handleStatusFilter(f.id)} className={`px-4 py-2 rounded-full text-sm font-medium transition ${activeStatus === f.id ? 'bg-navy text-white shadow-sm' : 'bg-white text-navy border border-gray-200 hover:border-navy'}`}>{f.icon} {f.label} ({count})</button>;
+          })}
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Title */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Job Title *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-sky"
-                  placeholder="e.g., Senior Software Engineer"
-                />
-              </div>
+        <div className="flex gap-2 flex-wrap mb-6">
+          {CATEGORY_FILTERS.map((c) => (
+            <button key={c.id} onClick={() => handleCategoryFilter(c.id)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${activeCategory === c.id ? 'bg-sky text-white' : 'bg-white text-charcoal/70 border border-gray-200 hover:border-sky'}`}>{c.label}</button>
+          ))}
+        </div>
 
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Category *
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-sky"
-                >
-                  <option value="">Select Category</option>
-                  <option value="Engineering">⚙️ Engineering</option>
-                  <option value="Law">⚖️ Law</option>
-                  <option value="Management">📊 Management</option>
-                  <option value="Others">📁 Others</option>
-                </select>
-              </div>
-
-              {/* Sub-Category */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Sub-Category
-                </label>
-                <input
-                  type="text"
-                  name="sub_category"
-                  value={formData.sub_category}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-sky"
-                  placeholder="e.g., Computer Science"
-                />
-              </div>
-
-              {/* Location */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Location *
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-sky"
-                  placeholder="e.g., Bangalore"
-                />
-              </div>
-
-              {/* Deadline */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Application Deadline *
-                </label>
-                <input
-                  type="date"
-                  name="deadline"
-                  value={formData.deadline}
-                  onChange={handleChange}
-                  required
-                  min={today}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-sky"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 2: Description */}
-          <div>
-            <h3 className="text-lg font-bold text-navy mb-4 pb-2 border-b border-gray-100">
-              📝 Job Details
-            </h3>
-
-            <div className="space-y-5">
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Job Description *
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  rows={5}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-sky resize-none"
-                  placeholder="Describe the role, responsibilities, and what the candidate will do..."
-                />
-              </div>
-
-              {/* Requirements */}
-              <div>
-                <label className="block text-sm font-medium text-charcoal mb-1">
-                  Requirements
-                </label>
-                <textarea
-                  name="requirements"
-                  value={formData.requirements}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-sky resize-none"
-                  placeholder="Qualifications, skills, experience needed..."
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Section 3: Status */}
-          <div>
-            <h3 className="text-lg font-bold text-navy mb-4 pb-2 border-b border-gray-100">
-              ⚙️ Publishing Options
-            </h3>
-
-            <div>
-              <label className="block text-sm font-medium text-charcoal mb-1">
-                Job Status
-              </label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-sky"
-              >
-                <option value="active">✅ Active (visible to candidates)</option>
-                <option value="draft">📝 Draft (save for later)</option>
-                <option value="closed">🔒 Closed (no new applications)</option>
-              </select>
-              <p className="text-xs text-charcoal/50 mt-1">
-                Active jobs appear on the public job listings
-              </p>
-            </div>
-          </div>
-
-          {/* Error */}
-          {error && (
-            <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
-              {error}
-            </p>
-          )}
-
-          {/* Buttons */}
-          <div className="flex gap-3">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="flex-1 bg-sky text-white py-3 rounded-lg font-medium hover:bg-navy transition disabled:opacity-50"
-            >
-              {submitting ? 'Publishing...' : '🚀 Publish Job'}
-            </button>
-            <Link
-              to="/admin"
-              className="px-6 py-3 bg-white text-navy border border-gray-200 rounded-lg font-medium hover:border-sky transition text-center"
-            >
-              Cancel
-            </Link>
-          </div>
-        </form>
-
-        {/* Preview */}
-        {formData.title && (
-          <div className="mt-8">
-            <h3 className="text-lg font-bold text-navy mb-3">
-              👁️ Preview (How it will look)
-            </h3>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${
-                  formData.category === 'Engineering'
-                    ? 'bg-sky'
-                    : formData.category === 'Law'
-                    ? 'bg-purple-500'
-                    : formData.category === 'Management'
-                    ? 'bg-emerald'
-                    : 'bg-amber'
-                }`}
-              >
-                {formData.category || 'Category'}
-              </span>
-              <h4 className="text-xl font-semibold text-navy mt-3 mb-1">
-                {formData.title}
-              </h4>
-              <p className="text-sm text-charcoal/60">
-                📍 {formData.location || 'Location'} •{' '}
-                {formData.sub_category || 'Sub-category'}
-              </p>
-            </div>
-          </div>
+        {filtered.length === 0 ? (
+          <div className="bg-white p-12 rounded-2xl shadow-sm text-center"><div className="text-5xl mb-3">🎯</div><p className="text-charcoal/60">No candidates found</p></div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full text-sm">
+            <thead><tr className="text-left text-charcoal/60 border-b border-gray-100 bg-cream"><th className="px-6 py-4 font-medium">Candidate</th><th className="px-6 py-4 font-medium">Preferred Role</th><th className="px-6 py-4 font-medium">Category</th><th className="px-6 py-4 font-medium">Experience</th><th className="px-6 py-4 font-medium">Status</th><th className="px-6 py-4 font-medium">Actions</th></tr></thead>
+            <tbody>
+              {filtered.map((c) => (
+                <tr key={c.id} className="border-b border-gray-50 hover:bg-cream/50 transition">
+                  <td className="px-6 py-4"><div className="font-medium text-navy">{c.full_name}</div><div className="text-xs text-charcoal/50">{c.email}</div><div className="text-xs text-charcoal/50">📱 {c.mobile}</div></td>
+                  <td className="px-6 py-4"><div className="text-charcoal">{c.preferred_role || 'N/A'}</div><div className="text-xs text-charcoal/50">📍 {c.preferred_location || 'Any'}</div></td>
+                  <td className="px-6 py-4"><span className="inline-flex items-center gap-1 px-2 py-1 bg-cream rounded-full text-xs">{c.preferred_category}</span></td>
+                  <td className="px-6 py-4"><div className="text-charcoal">{c.experience}</div>{c.is_fresher && <span className="inline-block px-2 py-0.5 bg-emerald/10 text-emerald-700 text-xs rounded-full mt-1">Fresher</span>}</td>
+                  <td className="px-6 py-4"><span className={`px-2 py-1 rounded-full text-xs font-medium text-white ${statusColors[c.status] || 'bg-gray-400'}`}>{c.status}</span></td>
+                  <td className="px-6 py-4"><div className="flex items-center gap-2"><button onClick={() => setSelectedCandidate(c)} className="p-2 hover:bg-sky/10 rounded-lg transition text-lg" title="View details">👁️</button>{c.status === 'new' && <button onClick={() => updateStatus(c.id, 'contacted')} className="p-2 hover:bg-amber/10 rounded-lg transition text-lg" title="Mark as Contacted">📞</button>}{c.status === 'contacted' && <button onClick={() => updateStatus(c.id, 'hired')} className="p-2 hover:bg-emerald/10 rounded-lg transition text-lg" title="Mark as Hired">✅</button>}</div></td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div></div>
         )}
+      </div>
+      {selectedCandidate && <CandidateModal candidate={selectedCandidate} onClose={() => setSelectedCandidate(null)} onUpdateStatus={updateStatus} />}
+    </div>
+  );
+}
+
+function CandidateModal({ candidate: c, onClose, onUpdateStatus }) {
+  const statusColors = { new: 'bg-sky', contacted: 'bg-amber', hired: 'bg-emerald', archived: 'bg-gray-400' };
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="sticky top-0 bg-white border-b border-gray-100 p-6 flex items-center justify-between"><div><h2 className="text-2xl font-bold text-navy">{c.full_name}</h2><p className="text-sm text-charcoal/60">{c.email}</p></div><button onClick={onClose} className="text-2xl text-charcoal/40 hover:text-charcoal">✕</button></div>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div><span className="text-sm text-charcoal/60">Status:</span><span className={`ml-2 px-3 py-1 rounded-full text-xs font-medium text-white ${statusColors[c.status]}`}>{c.status}</span></div>
+            <div className="flex gap-2 flex-wrap">
+              {c.status === 'new' && <button onClick={() => onUpdateStatus(c.id, 'contacted')} className="bg-amber text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition">📞 Mark Contacted</button>}
+              {c.status !== 'hired' && <button onClick={() => onUpdateStatus(c.id, 'hired')} className="bg-emerald text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:opacity-90 transition">✅ Mark Hired</button>}
+              {c.status !== 'archived' && <button onClick={() => onUpdateStatus(c.id, 'archived')} className="bg-gray-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-gray-600 transition">📦 Archive</button>}
+            </div>
+          </div>
+          <Section title="👤 Basic Information"><DetailRow label="Email" value={c.email} /><DetailRow label="Mobile" value={c.mobile} /><DetailRow label="Gender" value={c.gender || 'N/A'} /><DetailRow label="Date of Birth" value={c.date_of_birth ? new Date(c.date_of_birth).toLocaleDateString('en-IN') : 'N/A'} /><DetailRow label="Current City" value={c.current_city || 'N/A'} /></Section>
+          <Section title="🎯 Job Preferences"><DetailRow label="Preferred Category" value={c.preferred_category} /><DetailRow label="Preferred Role" value={c.preferred_role} /><DetailRow label="Preferred Location" value={c.preferred_location} /></Section>
+          <Section title="🎓 Education & Experience"><DetailRow label="Qualification" value={c.qualification} /><DetailRow label="Specialization" value={c.specialization} />{c.is_fresher ? <DetailRow label="Last Degree Org" value={c.last_degree_organization} /> : <><DetailRow label="Experience" value={c.experience} /><DetailRow label="Previous Org" value={c.previous_org || 'N/A'} /><DetailRow label="Current CTC" value={c.current_ctc || 'N/A'} /><DetailRow label="Notice Period" value={c.notice_period || 'N/A'} /></>}<DetailRow label="Skills" value={c.skills} /></Section>
+          {(c.linkedin_url || c.portfolio_url) && <Section title="🔗 Online Presence">{c.linkedin_url && <DetailRow label="LinkedIn" value={<a href={c.linkedin_url} target="_blank" rel="noreferrer" className="text-sky hover:underline">{c.linkedin_url}</a>} />}{c.portfolio_url && <DetailRow label="Portfolio" value={<a href={c.portfolio_url} target="_blank" rel="noreferrer" className="text-sky hover:underline">{c.portfolio_url}</a>} />}</Section>}
+          <Section title="📅 Submission"><DetailRow label="Submitted On" value={new Date(c.submitted_at).toLocaleDateString('en-IN')} /></Section>
+          <div><h3 className="font-bold text-navy mb-3">📎 Resume</h3><a href={c.resume_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 bg-navy text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-sky transition">📄 View Resume PDF</a></div>
+        </div>
       </div>
     </div>
   );
 }
 
-export default CreateJob;
+function Section({ title, children }) { return <div><h3 className="font-bold text-navy mb-3 pb-2 border-b border-gray-100">{title}</h3><div className="space-y-2">{children}</div></div>; }
+function DetailRow({ label, value }) { return <div className="flex gap-4 text-sm"><span className="text-charcoal/60 w-40 flex-shrink-0">{label}:</span><span className="text-charcoal font-medium">{value || 'N/A'}</span></div>; }
+
+export default ViewTalentPool;
