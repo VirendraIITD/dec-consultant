@@ -26,7 +26,7 @@ function Footer() {
               <img
                 src="/dec-logo.png"
                 alt="Douglas Educational Consultants"
-                className="h-9 w-auto bg-white rounded-full p-1 group-hover:scale-105 transition-transform shadow-smh-11 w-11 object-contain bg-white rounded-full p-[2px] group-hover:scale-105 transition-transform shadow-sm"
+                className="h-10 w-auto group-hover:scale-105 transition-transform"
               />
               <div className="flex flex-col">
                 <span className="text-xl font-bold text-white leading-tight">
@@ -38,7 +38,7 @@ function Footer() {
               </div>
             </Link>
             <p className="text-sm text-gray-400 max-w-sm mt-4 leading-relaxed">
-              Connecting top talent with leading organizations across Engineering, Law, Management, and Support Staff.
+              Recruitment and Staffing Solutions
             </p>
           </div>
 
