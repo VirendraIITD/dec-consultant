@@ -28,9 +28,12 @@ function Home() {
         </p>
         <Link
           to="/jobs"
-          className="inline-block bg-sky text-white px-8 py-3 rounded-full font-medium hover:bg-navy transition shadow-lg"
+          className="relative group inline-flex overflow-hidden rounded-full p-[3px] shadow-sm hover:shadow-md transition-shadow"
         >
-          Browse Jobs →
+          <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#1e3a8a_0%,#1e3a8a_60%,#ffffff_80%,#3b9ee5_100%)]" />
+          <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-navy px-8 py-3 text-sm font-bold text-white backdrop-blur-3xl transition-colors group-hover:bg-navy/95 tracking-wide">
+            Browse Jobs →
+          </span>
         </Link>
       </section>
 
