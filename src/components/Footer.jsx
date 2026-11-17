@@ -30,15 +30,13 @@ function Footer() {
               />
               <div className="flex flex-col">
                 <span className="text-xl font-bold text-white leading-tight">
-                  Douglas Educational
+                  Douglas Educational Consultants
                 </span>
-                <span className="text-[10px] uppercase tracking-widest text-sky font-bold leading-tight">
-                  Consultants
-                </span>
+
               </div>
             </Link>
             <p className="text-sm text-gray-400 max-w-sm mt-4 leading-relaxed">
-              Recruitment and Staffing Solutions
+              
             </p>
           </div>
 

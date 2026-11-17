@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
-import Footer from '../components/Footer'; // ⬅ ADDED
+import { authAPI } from '../lib/api';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -15,28 +16,38 @@ function Login() {
     setError('');
     setLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log("1. Login button clicked. Attempting to login...");
 
-    if (error) {
-      setError(error.message);
+    try {
+      // 1. Login via API
+      const data = await authAPI.login(email, password);
+      console.log("2. Login successful! User ID:", data.user.id);
+
+      // 2. Fetch profile
+      const profile = await authAPI.getProfile(data.user.id);
+      console.log("3. Profile fetched:", profile);
+
       setLoading(false);
-      return;
-    }
 
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
-    setLoading(false);
-
-    if (profile?.role === 'admin') {
-      navigate('/admin');
-    } else {
-      navigate('/jobs');
+      // 3. Redirect
+      if (profile?.role === 'admin') {
+        console.log("4. Role is ADMIN. Redirecting to /admin...");
+        navigate('/admin');
+      } else {
+        console.log("4. Role is NOT ADMIN. Redirecting to /jobs...");
+        navigate('/jobs');
+      }
+    } catch (err) {
+      console.error("❌ ERROR:", err);
+      setError(err.message || 'Login failed');
+      setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-cream">
+      <Navbar />
       
-      {/* ⬅ Main content with flex-grow to center the login box */}
       <div className="flex-grow flex items-center justify-center px-4 py-12">
         <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md border border-gray-100">
           <div className="text-center mb-6">
@@ -71,7 +82,7 @@ function Login() {
         </div>
       </div>
 
-      <Footer /> {/* ⬅ ADDED FOOTER */}
+      <Footer />
     </div>
   );
 }

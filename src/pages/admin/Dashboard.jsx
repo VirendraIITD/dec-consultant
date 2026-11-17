@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authAPI, dashboardAPI } from '../../lib/api'; // ⬅ NEW API IMPORTS
 import Navbar from '../../components/Navbar';
+import Button from '../../components/Button'; 
 
 function Dashboard() {
   const navigate = useNavigate();
