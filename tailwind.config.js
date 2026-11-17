@@ -14,6 +14,16 @@ export default {
         amber: '#F59E0B',
         cream: '#F8FAFC',
       },
+      // 🎯 ADD THIS ANIMATION
+      animation: {
+        'border-slide': 'border-slide 2.5s linear infinite',
+      },
+      keyframes: {
+        'border-slide': {
+          '0%': { backgroundPosition: '200% 50%' },
+          '100%': { backgroundPosition: '-200% 50%' },
+        },
+      },
     },
   },
   plugins: [],

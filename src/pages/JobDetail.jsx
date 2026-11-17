@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { jobsAPI } from '../lib/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer'; // ⬅ ADDED IMPORT
+import Button from '../components/Button'; 
 
 function JobDetail() {
   const { id } = useParams();
@@ -160,12 +161,9 @@ function JobDetail() {
                 </div>
               </div>
 
-              <button
-                onClick={handleApply}
-                className="w-full bg-sky text-white py-3 rounded-xl font-medium hover:bg-navy transition shadow-md"
-              >
+              <Button onClick={handleApply} fullWidth={true} rounded="rounded-xl" className="py-3">
                 Apply Now →
-              </button>
+              </Button>
 
               <p className="text-xs text-center text-charcoal/50 mt-4">
                 Login required to apply

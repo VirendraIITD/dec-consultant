@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import JobCard from '../components/JobCard';
 import CategoryFilter from '../components/CategoryFilter';
 import Footer from '../components/Footer';
+import Button from '../components/Button'; 
 
 function JobListings() {
   const [jobs, setJobs] = useState([]);
@@ -80,12 +81,9 @@ function JobListings() {
           <p className="text-sm text-charcoal/70 mb-4">
             Submit your resume to our Talent Pool.
           </p>
-          <Link
-            to="/talent-pool"
-            className="inline-block bg-amber text-white px-6 py-2 rounded-full font-medium hover:opacity-90 transition"
-          >
+          <Button to="/talent-pool" rounded="rounded-full" className="px-6 py-2">
             📩 Submit Resume Anyway
-          </Link>
+          </Button>
         </div>
       </div>
       <Footer />

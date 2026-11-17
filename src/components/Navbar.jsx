@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import Button from './Button'; // Import at top
 
 function Navbar() {
   const [user, setUser] = useState(null);
@@ -97,18 +98,9 @@ function Navbar() {
               </button>
             </div>
           ) : (
-            <Link 
-              to="/login" 
-              className="relative group inline-flex overflow-hidden rounded-lg p-[1px] shadow-sm hover:shadow-md transition-shadow"
-            >
-              {/* The rotating gradient - NOW WITH BRIGHT WHITE LIGHT */}
-              <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#1e3a8a_0%,#1e3a8a_60%,#ffffff_80%,#3b9ee5_100%)]" />
-              
-              {/* The actual button face */}
-              <span className="inline-flex h-full w-full items-center justify-center rounded-lg bg-navy px-4 py-1.5 text-xs font-bold text-white backdrop-blur-3xl transition-colors group-hover:bg-navy/95 tracking-wide">
-                Login
-              </span>
-            </Link>
+            <Button to="/login" isSmall={true}>
+              Login
+            </Button>
           )}
         </div>
       </div>

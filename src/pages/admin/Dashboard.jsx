@@ -55,7 +55,9 @@ function Dashboard() {
             <h1 className="text-3xl font-bold text-navy">Admin Dashboard</h1>
             <p className="text-charcoal/60 mt-1">Manage recruitment & hiring pipeline</p>
           </div>
-          <Link to="/admin/create-job" className="bg-sky text-white px-5 py-2 rounded-lg font-medium hover:bg-navy transition shadow-sm">➕ Create New Job</Link>
+          <Button to="/admin/create-job" rounded="rounded-lg" className="px-5 py-2">
+            ➕ Create New Job
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

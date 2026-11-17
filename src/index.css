@@ -17,3 +17,56 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* =========================================
+   ✨ THIN BRIGHT LASER BORDER
+   ========================================= */
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spin-gradient {
+  to {
+    --angle: 360deg;
+  }
+}
+
+.btn-laser {
+  position: relative;
+}
+
+.btn-laser::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  
+  /* 🎯 THINNESS: 1px makes it a razor-sharp laser */
+  padding: 1px; 
+  
+  /* 🎯 BRIGHT STAR: A very short, intense white flash with a tiny sky-blue tail */
+  background-image: conic-gradient(
+    from var(--angle), 
+    transparent 0%, 
+    transparent 85%, 
+    #3B9EE5 92%,    /* Tiny blue tail */
+    #ffffff 98%,    /* Blinding white head */
+    transparent 100%
+  );
+  
+  /* Smooth speed */
+  animation: spin-gradient 4s linear infinite;
+  
+  /* Keep it strictly on the border */
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  
+  /* 🎯 PREMIUM GLOW: Creates the bright aura around the star */
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9));
+}

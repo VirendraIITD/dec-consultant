@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Button from '../components/Button'; 
 
 const categories = [
   { name: 'Engineering', icon: '⚙️', bg: 'bg-sky/10', border: 'border-sky' },
@@ -26,15 +27,9 @@ function Home() {
           Explore opportunities across Engineering, Law, Management, and more.
           DEC Consultant connects top talent with leading organizations.
         </p>
-        <Link
-          to="/jobs"
-          className="relative group inline-flex overflow-hidden rounded-full p-[3px] shadow-sm hover:shadow-md transition-shadow"
-        >
-          <span className="absolute inset-[-1000%] animate-[spin_3s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#1e3a8a_0%,#1e3a8a_60%,#ffffff_80%,#3b9ee5_100%)]" />
-          <span className="inline-flex h-full w-full items-center justify-center rounded-full bg-navy px-8 py-3 text-sm font-bold text-white backdrop-blur-3xl transition-colors group-hover:bg-navy/95 tracking-wide">
-            Browse Jobs →
-          </span>
-        </Link>
+        <Button to="/jobs" rounded="rounded-full" className="px-8 text-base">
+          Browse Jobs →
+        </Button>
       </section>
 
       {/* CATEGORIES SECTION */}
@@ -66,12 +61,9 @@ function Home() {
           <p className="text-charcoal/70 mb-4">
             Join our Talent Pool — we'll contact you when a suitable job opens.
           </p>
-          <Link
-            to="/talent-pool"
-            className="inline-block bg-amber text-white px-6 py-2 rounded-full font-medium hover:opacity-90 transition shadow-sm"
-          >
-            📩 Submit Your Resume
-          </Link>
+          <Button to="/talent-pool" rounded="rounded-full" className="px-8 py-3">
+            📩 Submit Resume
+          </Button>
         </div>
       </section>
 

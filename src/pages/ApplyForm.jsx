@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'; // Keep for auth session
 import { jobsAPI, storageAPI, applicationsAPI } from '../lib/api'; // ⬅ NEW API IMPORTS
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Button from '../components/Button'; 
 
 function ApplyForm() {
   const { id } = useParams();
@@ -345,9 +346,9 @@ function ApplyForm() {
             <p className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{error}</p>
           )}
 
-          <button type="submit" disabled={submitting} className="w-full bg-sky text-white py-3 rounded-lg font-medium hover:bg-navy transition disabled:opacity-50 shadow-md">
+          <Button type="submit" disabled={submitting} fullWidth={true} rounded="rounded-xl" className="py-3">
             {submitting ? 'Submitting...' : 'Submit Application'}
-          </button>
+          </Button>
           <p className="text-xs text-center text-charcoal/50">By submitting, you agree to our terms</p>
         </form>
       </div>
