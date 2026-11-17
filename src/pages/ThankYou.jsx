@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer'; // ⬅ ADDED
 
 function ThankYou() {
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen flex flex-col bg-cream">
       <Navbar />
 
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+      {/* ⬅ Added flex-grow */}
+      <div className="flex-grow w-full max-w-2xl mx-auto px-4 py-20 text-center">
         <div className="text-7xl mb-6">🎉</div>
 
         <h1 className="text-4xl font-bold text-navy mb-4">
@@ -18,7 +20,7 @@ function ThankYou() {
           HR panel for review.
         </p>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm mb-8 text-left">
+        <div className="bg-white p-6 rounded-2xl shadow-sm mb-8 text-left border border-gray-100">
           <h3 className="font-semibold text-navy mb-3">What happens next?</h3>
           <ul className="space-y-2 text-sm text-charcoal/70">
             <li>✅ Our HR team will review your application</li>
@@ -28,20 +30,16 @@ function ThankYou() {
         </div>
 
         <div className="flex gap-3 justify-center flex-wrap">
-          <Link
-            to="/jobs"
-            className="bg-sky text-white px-6 py-2 rounded-lg font-medium hover:bg-navy transition"
-          >
+          <Link to="/jobs" className="bg-sky text-white px-6 py-2 rounded-lg font-medium hover:bg-navy transition shadow-md">
             Browse More Jobs
           </Link>
-          <Link
-            to="/"
-            className="bg-white text-navy border border-gray-200 px-6 py-2 rounded-lg font-medium hover:border-sky transition"
-          >
+          <Link to="/" className="bg-white text-navy border border-gray-200 px-6 py-2 rounded-lg font-medium hover:border-sky transition">
             Return Home
           </Link>
         </div>
       </div>
+
+      <Footer /> {/* ⬅ ADDED FOOTER */}
     </div>
   );
 }

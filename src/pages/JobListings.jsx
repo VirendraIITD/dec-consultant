@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabaseClient';
+import { jobsAPI } from '../lib/api';
 import Navbar from '../components/Navbar';
 import JobCard from '../components/JobCard';
 import CategoryFilter from '../components/CategoryFilter';
+import Footer from '../components/Footer';
 
 function JobListings() {
   const [jobs, setJobs] = useState([]);
@@ -13,23 +14,20 @@ function JobListings() {
 
   // Fetch jobs from Supabase on page load
   useEffect(() => {
-    async function fetchJobs() {
-      const { data, error } = await supabase
-        .from('jobs')
-        .select('*')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching jobs:', error);
-      } else {
-        setJobs(data || []);
-        setFilteredJobs(data || []);
-      }
+  async function fetchJobs() {
+    try {
+      // Ask the waiter for the jobs!
+      const data = await jobsAPI.getAllActive();
+      setJobs(data);
+      setFilteredJobs(data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
       setLoading(false);
     }
-    fetchJobs();
-  }, []);
+  }
+  fetchJobs();
+}, []);
 
   // Filter when category changes
   function handleCategoryFilter(category) {
@@ -42,8 +40,10 @@ function JobListings() {
   }
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen flex flex-col bg-cream">
       <Navbar />
+      {/* Add flex-grow to this div */}
+      <div className="flex-grow max-w-6xl w-full mx-auto px-4 py-10"></div>
 
       <div className="max-w-6xl mx-auto px-4 py-10">
         {/* Heading */}
@@ -88,6 +88,7 @@ function JobListings() {
           </Link>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
